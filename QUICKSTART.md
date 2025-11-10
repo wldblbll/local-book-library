@@ -29,7 +29,27 @@ python scanner.py /home/user/Documents/Livres
 
 ### 3️⃣ Ouvrir l'interface
 
-Double-cliquez sur **`index.html`** ou ouvrez-le dans votre navigateur.
+**Important** : Vous devez utiliser un serveur HTTP local !
+
+```bash
+# Lancer le serveur
+python3 -m http.server 8000
+
+# Puis ouvrir dans votre navigateur :
+# http://localhost:8000
+```
+
+---
+
+## 🔄 Mettre à jour votre bibliothèque
+
+**Ajouté/supprimé des livres ?** Relancez simplement :
+
+```bash
+python scanner.py /chemin/vers/vos/livres
+```
+
+⚡ Le scan incrémental ne traite que les changements (ultra rapide !)
 
 ---
 

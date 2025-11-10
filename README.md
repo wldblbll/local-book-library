@@ -45,11 +45,12 @@ python scanner.py /chemin/vers/vos/livres
 **Options disponibles** :
 
 ```bash
-python scanner.py /chemin/vers/vos/livres -o library_data
-```
+python scanner.py /chemin/vers/vos/livres [OPTIONS]
 
-- Le premier argument est le **chemin vers votre dossier de livres**
-- `-o` ou `--output` : Dossier de sortie pour la base de données (par défaut : `library_data`)
+Options:
+  -o, --output DIR    Dossier de sortie (défaut: library_data)
+  --full              Forcer un scan complet (ignore la base existante)
+```
 
 **Exemple** :
 
@@ -59,14 +60,20 @@ python scanner.py "C:\Users\VotreNom\Documents\Livres"
 
 # macOS/Linux
 python scanner.py ~/Documents/Livres
+
+# Forcer un scan complet
+python scanner.py ~/Documents/Livres --full
 ```
 
 Le scanner va :
 1. Parcourir récursivement tous les sous-dossiers
 2. Trouver tous les fichiers `.pdf` et `.epub`
-3. Extraire les métadonnées (titre, auteur, etc.)
-4. Extraire les couvertures quand c'est possible
-5. Créer une base de données JSON dans le dossier `library_data/`
+3. **🚀 Mode incrémental (par défaut)** : Ne scanne que les nouveaux/modifiés, garde les catégories
+4. Extraire les métadonnées (titre, auteur, etc.)
+5. Extraire les couvertures quand c'est possible
+6. Créer une base de données JSON dans le dossier `library_data/`
+
+> ⚡ **Nouveau !** Le scanner est maintenant **incrémental** : si vous relancez le scan, seuls les nouveaux livres ou modifiés seront traités. Les livres supprimés seront automatiquement retirés. Vos catégories personnalisées sont préservées !
 
 ### Étape 2 : Ouvrir l'interface web
 
@@ -134,15 +141,33 @@ local-book-library/
 
 ## 🔄 Mettre à jour votre bibliothèque
 
-Si vous ajoutez de nouveaux livres, relancez simplement le scanner :
+### Scan incrémental (recommandé - ultra rapide !)
+
+Si vous ajoutez ou supprimez des livres, relancez simplement le scanner :
 
 ```bash
 python scanner.py /chemin/vers/vos/livres
 ```
 
-Puis **rechargez** la page web (`F5` ou `Ctrl+R` / `Cmd+R`).
+Le scanner détectera automatiquement :
+- ✅ **Nouveaux livres** : Seront scannés et ajoutés
+- ✅ **Livres modifiés** : Seront re-scannés
+- ✅ **Livres supprimés** : Seront retirés de la base
+- ✅ **Livres inchangés** : Seront ignorés (super rapide !)
 
-> ⚠️ **Note** : Les catégories que vous avez ajoutées manuellement sont sauvegardées dans le navigateur (localStorage) et seront préservées.
+**Vos catégories personnalisées sont préservées** pendant les scans incrémentiaux !
+
+### Scan complet (si nécessaire)
+
+Si vous voulez tout rescanner (par exemple après un problème) :
+
+```bash
+python scanner.py /chemin/vers/vos/livres --full
+```
+
+> ⚡ **Astuce** : Avec 1465 livres, un scan incrémental prend quelques secondes au lieu de plusieurs minutes !
+
+Puis **rechargez** la page web (`F5` ou `Ctrl+R` / `Cmd+R`).
 
 ## 🎨 Personnalisation
 
