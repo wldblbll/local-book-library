@@ -256,20 +256,62 @@
             background: #e0e0e0;
         }
 
-        /* Vue liste */
+        /* Vue liste - Tableau compact */
+        .books-list {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
         .books-list .book-card {
-            flex-direction: row;
-            gap: 20px;
+            display: table-row;
+            border-radius: 0;
+            padding: 0;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .books-list .book-card:hover {
+            transform: none;
+            background: #f8f8f8;
+            box-shadow: none;
+        }
+
+        .books-list .book-card > div {
+            display: table-cell;
+            padding: 12px 10px;
+            vertical-align: middle;
         }
 
         .books-list .book-cover {
-            width: 120px;
-            height: 160px;
-            flex-shrink: 0;
+            display: none !important;
         }
 
-        .books-list .book-info {
-            flex: 1;
+        .books-list .book-title {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            display: block;
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
+
+        .books-list .book-author {
+            margin: 0;
+            padding-left: 10px;
+            min-width: 200px;
+        }
+
+        .books-list .book-meta {
+            margin: 0;
+            padding-left: 10px;
+            min-width: 150px;
+            white-space: nowrap;
+        }
+
+        .books-list .book-categories {
+            margin: 0;
+            padding-left: 10px;
         }
 
         .no-books {
@@ -402,19 +444,20 @@
             background: #5568d3;
         }
 
-        .open-file-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 24px;
+        /* Boutons d'action dans la modal */
+        .modal-info button {
+            padding: 10px 20px;
             background: #667eea;
             color: white;
-            text-decoration: none;
+            border: none;
             border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
             font-weight: 500;
             transition: background 0.3s;
         }
 
-        .open-file-btn:hover {
+        .modal-info button:hover {
             background: #5568d3;
         }
 
@@ -696,7 +739,15 @@
                     <input type="text" id="new-category-input" placeholder="Ajouter une catégorie...">
                     <button onclick="addCategory('${bookId}')">Ajouter</button>
                 </div>
-                <a href="file://${book.path}" class="open-file-btn" target="_blank">📖 Ouvrir le livre</a>
+                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="copyPath('${book.path.replace(/'/g, "\\'")}')">
+                        📋 Copier le chemin
+                    </button>
+                    <button onclick="showPathInstructions('${book.path.replace(/'/g, "\\'")}')" style="background: #f0f0f0; color: #666;">
+                        📖 Voir les instructions
+                    </button>
+                </div>
+                <p id="copy-status" style="margin-top: 10px; font-size: 0.9em; color: #667eea; display: none;"></p>
             `;
 
             modal.classList.add('active');
@@ -742,6 +793,54 @@
             // On utilise localStorage comme solution de contournement
             localStorage.setItem('library', JSON.stringify(library));
             console.log('Bibliothèque sauvegardée dans localStorage');
+        }
+
+        // Copier le chemin dans le presse-papier
+        function copyPath(path) {
+            navigator.clipboard.writeText(path).then(() => {
+                const status = document.getElementById('copy-status');
+                status.textContent = '✓ Chemin copié dans le presse-papier !';
+                status.style.display = 'block';
+                status.style.color = '#28a745';
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                const status = document.getElementById('copy-status');
+                status.textContent = '❌ Erreur lors de la copie. Chemin: ' + path;
+                status.style.display = 'block';
+                status.style.color = '#d32f2f';
+            });
+        }
+
+        // Afficher les instructions pour ouvrir le livre
+        function showPathInstructions(path) {
+            const status = document.getElementById('copy-status');
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const isWindows = navigator.platform.toUpperCase().indexOf('WIN') >= 0;
+
+            let instructions = '<strong>Comment ouvrir le livre :</strong><br><br>';
+
+            if (isMac) {
+                instructions += '1. Copiez le chemin avec le bouton "📋 Copier"<br>';
+                instructions += '2. Ouvrez Finder → Menu "Aller" → "Aller au dossier..." (Cmd+Shift+G)<br>';
+                instructions += '3. Collez le chemin et appuyez sur Entrée<br><br>';
+            } else if (isWindows) {
+                instructions += '1. Copiez le chemin avec le bouton "📋 Copier"<br>';
+                instructions += '2. Ouvrez l\'Explorateur de fichiers (Windows+E)<br>';
+                instructions += '3. Collez le chemin dans la barre d\'adresse et appuyez sur Entrée<br><br>';
+            } else {
+                instructions += '1. Copiez le chemin avec le bouton "📋 Copier"<br>';
+                instructions += '2. Ouvrez votre gestionnaire de fichiers<br>';
+                instructions += '3. Naviguez vers le chemin copié<br><br>';
+            }
+
+            instructions += '<small style="color: #666;">Chemin: ' + path + '</small>';
+
+            status.innerHTML = instructions;
+            status.style.display = 'block';
+            status.style.color = '#333';
+            status.style.lineHeight = '1.6';
         }
 
         // Charger depuis localStorage si disponible
