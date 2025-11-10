@@ -118,11 +118,24 @@ Utilisez les menus déroulants pour filtrer par :
 ### Gestion des catégories
 
 1. **Cliquez sur un livre** pour ouvrir ses détails
-2. **Tapez une catégorie** dans le champ prévu
+2. **Tapez une catégorie** dans le champ prévu (autocomplétion disponible)
 3. **Cliquez sur "Ajouter"**
-4. Les catégories sont sauvegardées localement dans votre navigateur
+4. Les catégories sont colorées automatiquement (couleur unique par catégorie)
 
 **Exemples de catégories** : Roman, Science-Fiction, Technique, Cuisine, Biographie, etc.
+
+### Sauvegarder les catégories définitivement
+
+Les catégories sont d'abord sauvegardées dans le navigateur. Pour les enregistrer dans `library.json` :
+
+1. **Exportez** : Cliquez sur "📥 Exporter les catégories" (bannière jaune qui apparaît après modification)
+2. **Importez** : Lancez le script Python :
+   ```bash
+   python3 import_categories.py categories_2025-11-10.json
+   ```
+3. **Rechargez** : Rechargez la page web (`F5`)
+
+Vos catégories sont maintenant dans `library.json` et seront préservées lors des prochains scans !
 
 ## 📁 Structure du projet
 

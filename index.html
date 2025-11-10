@@ -504,6 +504,21 @@
             </div>
         </header>
 
+        <!-- Rappel pour exporter les catégories -->
+        <div id="export-reminder" style="display: none; opacity: 0; transition: opacity 0.3s; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="flex: 1;">
+                    <strong style="color: #856404;">💾 Modifications non sauvegardées</strong>
+                    <p style="margin: 5px 0 0 0; color: #856404; font-size: 0.9em;">
+                        Vos catégories sont sauvegardées dans le navigateur. Pour les enregistrer définitivement dans library.json :
+                    </p>
+                </div>
+                <button onclick="exportCategories()" style="background: #ffc107; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 15px;">
+                    📥 Exporter les catégories
+                </button>
+            </div>
+        </div>
+
         <div class="controls">
             <div class="search-bar">
                 <input
@@ -901,6 +916,53 @@
             // On utilise localStorage comme solution de contournement
             localStorage.setItem('library', JSON.stringify(library));
             console.log('Bibliothèque sauvegardée dans localStorage');
+
+            // Afficher un rappel pour exporter
+            showExportReminder();
+        }
+
+        // Afficher un rappel pour exporter les modifications
+        function showExportReminder() {
+            const reminderDiv = document.getElementById('export-reminder');
+            if (reminderDiv) {
+                reminderDiv.style.display = 'block';
+                setTimeout(() => {
+                    reminderDiv.style.opacity = '1';
+                }, 100);
+            }
+        }
+
+        // Exporter les catégories modifiées
+        function exportCategories() {
+            const categoriesData = {
+                export_date: new Date().toISOString(),
+                books: library.books.map(book => ({
+                    id: book.id,
+                    title: book.title,
+                    categories: book.categories
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(categoriesData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `categories_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Cacher le rappel
+            const reminderDiv = document.getElementById('export-reminder');
+            if (reminderDiv) {
+                reminderDiv.style.opacity = '0';
+                setTimeout(() => {
+                    reminderDiv.style.display = 'none';
+                }, 300);
+            }
+
+            alert('✓ Catégories exportées!\n\nMaintenant, lancez :\npython3 import_categories.py categories_XXXX-XX-XX.json');
         }
 
         // Copier le chemin dans le presse-papier
