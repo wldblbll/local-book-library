@@ -1,5 +1,39 @@
 # Changelog
 
+## Version 1.3.0 - Catégories colorées et gestion améliorée (2025-11-10)
+
+### ✨ Nouvelles fonctionnalités
+
+- **Catégories colorées** : Chaque catégorie a maintenant sa propre couleur unique
+  - Couleur générée automatiquement basée sur le nom de la catégorie
+  - Cohérente et déterministe (même nom = même couleur)
+  - Palette harmonieuse via HSL
+
+- **Autocomplétion des catégories** : Suggestions en temps réel lors de l'ajout
+  - Affiche les catégories existantes pendant la saisie
+  - Évite les doublons et variations de noms
+  - Interface fluide et intuitive
+
+- **Suppression de livres** : Possibilité de retirer un livre de la bibliothèque
+  - Bouton "🗑️ Supprimer ce livre" dans la modal
+  - Confirmation obligatoire avant suppression
+  - Le fichier physique est préservé
+  - Mise à jour automatique de toutes les vues
+
+### 🐛 Corrections
+
+- **Élimination des doublons** dans les listes déroulantes
+  - Les filtres auteur/catégorie sont maintenant correctement vidés avant remplissage
+  - Plus de catégories en double dans le menu déroulant
+
+### 🎨 Améliorations visuelles
+
+- Text-shadow sur les tags pour meilleure lisibilité
+- Bouton de suppression visuellement distinct (rouge)
+- Messages de confirmation clairs
+
+---
+
 ## Version 1.2.0 - Robustesse et Fiabilité (2025-11-10)
 
 ### 🛡️ Corrections critiques
