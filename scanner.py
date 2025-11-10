@@ -10,6 +10,8 @@ from pathlib import Path
 from io import BytesIO
 import argparse
 from datetime import datetime
+import signal
+import sys
 
 try:
     from pypdf import PdfReader
@@ -188,80 +190,96 @@ class BookScanner:
         # Traiter les PDF
         for pdf_file in pdf_files:
             processed += 1
-            file_id = self.get_file_hash(pdf_file)
-            found_ids.add(file_id)
 
-            # Vérifier si le livre existe déjà
-            if file_id in self.existing_books:
-                existing = self.existing_books[file_id]
-                # Vérifier si le fichier a été modifié
-                current_mtime = datetime.fromtimestamp(pdf_file.stat().st_mtime).isoformat()
+            try:
+                file_id = self.get_file_hash(pdf_file)
+                found_ids.add(file_id)
 
-                if existing['modified'] == current_mtime:
-                    # Fichier inchangé, réutiliser les métadonnées
-                    print(f"[{processed}/{total_files}] ✓ Déjà indexé: {pdf_file.name}")
-                    self.books.append(existing)
-                    reused_books += 1
-                    continue
+                # Vérifier si le livre existe déjà
+                if file_id in self.existing_books:
+                    existing = self.existing_books[file_id]
+                    # Vérifier si le fichier a été modifié
+                    current_mtime = datetime.fromtimestamp(pdf_file.stat().st_mtime).isoformat()
 
-            # Nouveau livre ou modifié
-            print(f"[{processed}/{total_files}] 📖 Scan: {pdf_file.name}")
-            metadata = self.extract_pdf_metadata(pdf_file)
-            if metadata:
-                book_info = {
-                    'id': file_id,
-                    'filename': pdf_file.name,
-                    'path': str(pdf_file.absolute()),
-                    'type': 'pdf',
-                    'title': metadata['title'],
-                    'author': metadata['author'],
-                    'cover': metadata['cover'],
-                    'pages': metadata['pages'],
-                    'size': pdf_file.stat().st_size,
-                    'modified': datetime.fromtimestamp(pdf_file.stat().st_mtime).isoformat(),
-                    'categories': self.existing_books.get(file_id, {}).get('categories', [])
-                }
-                self.books.append(book_info)
-                new_books += 1
+                    if existing['modified'] == current_mtime:
+                        # Fichier inchangé, réutiliser les métadonnées
+                        print(f"[{processed}/{total_files}] ✓ Déjà indexé: {pdf_file.name}")
+                        self.books.append(existing)
+                        reused_books += 1
+                        continue
+
+                # Nouveau livre ou modifié
+                print(f"[{processed}/{total_files}] 📖 Scan: {pdf_file.name}")
+                metadata = self.extract_pdf_metadata(pdf_file)
+                if metadata:
+                    book_info = {
+                        'id': file_id,
+                        'filename': pdf_file.name,
+                        'path': str(pdf_file.absolute()),
+                        'type': 'pdf',
+                        'title': metadata['title'],
+                        'author': metadata['author'],
+                        'cover': metadata.get('cover'),
+                        'pages': metadata.get('pages'),
+                        'size': pdf_file.stat().st_size,
+                        'modified': datetime.fromtimestamp(pdf_file.stat().st_mtime).isoformat(),
+                        'categories': self.existing_books.get(file_id, {}).get('categories', [])
+                    }
+                    self.books.append(book_info)
+                    new_books += 1
+                else:
+                    print(f"    ⚠️  Impossible d'extraire les métadonnées")
+
+            except Exception as e:
+                print(f"    ❌ Erreur: {e}")
+                continue
 
         # Traiter les ePub
         for epub_file in epub_files:
             processed += 1
-            file_id = self.get_file_hash(epub_file)
-            found_ids.add(file_id)
 
-            # Vérifier si le livre existe déjà
-            if file_id in self.existing_books:
-                existing = self.existing_books[file_id]
-                # Vérifier si le fichier a été modifié
-                current_mtime = datetime.fromtimestamp(epub_file.stat().st_mtime).isoformat()
+            try:
+                file_id = self.get_file_hash(epub_file)
+                found_ids.add(file_id)
 
-                if existing['modified'] == current_mtime:
-                    # Fichier inchangé, réutiliser les métadonnées
-                    print(f"[{processed}/{total_files}] ✓ Déjà indexé: {epub_file.name}")
-                    self.books.append(existing)
-                    reused_books += 1
-                    continue
+                # Vérifier si le livre existe déjà
+                if file_id in self.existing_books:
+                    existing = self.existing_books[file_id]
+                    # Vérifier si le fichier a été modifié
+                    current_mtime = datetime.fromtimestamp(epub_file.stat().st_mtime).isoformat()
 
-            # Nouveau livre ou modifié
-            print(f"[{processed}/{total_files}] 📖 Scan: {epub_file.name}")
-            metadata = self.extract_epub_metadata(epub_file)
-            if metadata:
-                book_info = {
-                    'id': file_id,
-                    'filename': epub_file.name,
-                    'path': str(epub_file.absolute()),
-                    'type': 'epub',
-                    'title': metadata['title'],
-                    'author': metadata['author'],
-                    'cover': metadata['cover'],
-                    'pages': metadata['pages'],
-                    'size': epub_file.stat().st_size,
-                    'modified': datetime.fromtimestamp(epub_file.stat().st_mtime).isoformat(),
-                    'categories': self.existing_books.get(file_id, {}).get('categories', [])
-                }
-                self.books.append(book_info)
-                new_books += 1
+                    if existing['modified'] == current_mtime:
+                        # Fichier inchangé, réutiliser les métadonnées
+                        print(f"[{processed}/{total_files}] ✓ Déjà indexé: {epub_file.name}")
+                        self.books.append(existing)
+                        reused_books += 1
+                        continue
+
+                # Nouveau livre ou modifié
+                print(f"[{processed}/{total_files}] 📖 Scan: {epub_file.name}")
+                metadata = self.extract_epub_metadata(epub_file)
+                if metadata:
+                    book_info = {
+                        'id': file_id,
+                        'filename': epub_file.name,
+                        'path': str(epub_file.absolute()),
+                        'type': 'epub',
+                        'title': metadata['title'],
+                        'author': metadata['author'],
+                        'cover': metadata.get('cover'),
+                        'pages': metadata.get('pages'),
+                        'size': epub_file.stat().st_size,
+                        'modified': datetime.fromtimestamp(epub_file.stat().st_mtime).isoformat(),
+                        'categories': self.existing_books.get(file_id, {}).get('categories', [])
+                    }
+                    self.books.append(book_info)
+                    new_books += 1
+                else:
+                    print(f"    ⚠️  Impossible d'extraire les métadonnées")
+
+            except Exception as e:
+                print(f"    ❌ Erreur: {e}")
+                continue
 
         # Détecter les livres supprimés
         deleted_books = []
@@ -288,8 +306,19 @@ class BookScanner:
         print(f"{'='*60}")
 
     def save_database(self):
-        """Sauvegarde la base de données au format JSON"""
+        """Sauvegarde la base de données au format JSON de manière atomique"""
         db_file = self.output_dir / "library.json"
+        db_file_temp = self.output_dir / "library.json.tmp"
+
+        # Validation : s'assurer que tous les livres ont les champs requis
+        for book in self.books:
+            # Garantir que tous les champs critiques existent
+            if 'cover' not in book or book['cover'] is None:
+                book['cover'] = None
+            if 'categories' not in book:
+                book['categories'] = []
+            if 'pages' not in book:
+                book['pages'] = None
 
         database = {
             'version': '1.0',
@@ -299,17 +328,35 @@ class BookScanner:
             'books': self.books
         }
 
-        with open(db_file, 'w', encoding='utf-8') as f:
-            json.dump(database, f, ensure_ascii=False, indent=2)
+        try:
+            # Écrire dans un fichier temporaire d'abord
+            with open(db_file_temp, 'w', encoding='utf-8') as f:
+                json.dump(database, f, ensure_ascii=False, indent=2)
 
-        print(f"Base de données sauvegardée: {db_file}")
+            # Vérifier que le JSON est valide en le relisant
+            with open(db_file_temp, 'r', encoding='utf-8') as f:
+                json.load(f)
 
-        # Créer aussi une version compacte
-        db_file_compact = self.output_dir / "library.min.json"
-        with open(db_file_compact, 'w', encoding='utf-8') as f:
-            json.dump(database, f, ensure_ascii=False)
+            # Si tout est OK, remplacer l'ancien fichier de manière atomique
+            db_file_temp.replace(db_file)
+            print(f"✓ Base de données sauvegardée: {db_file}")
 
-        print(f"Version compacte: {db_file_compact}")
+            # Créer aussi une version compacte
+            db_file_compact = self.output_dir / "library.min.json"
+            db_file_compact_temp = self.output_dir / "library.min.json.tmp"
+
+            with open(db_file_compact_temp, 'w', encoding='utf-8') as f:
+                json.dump(database, f, ensure_ascii=False)
+
+            db_file_compact_temp.replace(db_file_compact)
+            print(f"✓ Version compacte: {db_file_compact}")
+
+        except Exception as e:
+            print(f"❌ Erreur lors de la sauvegarde: {e}")
+            # Nettoyer les fichiers temporaires
+            if db_file_temp.exists():
+                db_file_temp.unlink()
+            raise
 
 
 def main():
@@ -346,11 +393,37 @@ def main():
         print("⚡ Mode: Scan INCRÉMENTAL (seuls les nouveaux/modifiés seront scannés)")
 
     scanner = BookScanner(args.library_path, args.output, incremental=incremental)
-    scanner.scan_directory()
-    scanner.save_database()
 
-    print("\n✓ Indexation terminée!")
-    print(f"  Vous pouvez maintenant ouvrir 'index.html' pour naviguer dans votre bibliothèque.")
+    # Gestionnaire pour Ctrl+C - sauvegarder avant de quitter
+    def signal_handler(sig, frame):
+        print("\n\n⚠️  Interruption détectée (Ctrl+C)")
+        if scanner.books:
+            print(f"💾 Sauvegarde des {len(scanner.books)} livres déjà scannés...")
+            try:
+                scanner.save_database()
+                print("✓ Sauvegarde réussie!")
+            except Exception as e:
+                print(f"❌ Erreur lors de la sauvegarde: {e}")
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+    try:
+        scanner.scan_directory()
+        scanner.save_database()
+
+        print("\n✓ Indexation terminée!")
+        print(f"  Vous pouvez maintenant ouvrir 'index.html' pour naviguer dans votre bibliothèque.")
+    except Exception as e:
+        print(f"\n❌ Erreur fatale: {e}")
+        if scanner.books:
+            print(f"💾 Tentative de sauvegarde des {len(scanner.books)} livres scannés...")
+            try:
+                scanner.save_database()
+                print("✓ Sauvegarde partielle réussie!")
+            except:
+                pass
+        raise
 
 
 if __name__ == "__main__":

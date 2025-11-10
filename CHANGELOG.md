@@ -1,5 +1,29 @@
 # Changelog
 
+## Version 1.2.0 - Robustesse et Fiabilité (2025-11-10)
+
+### 🛡️ Corrections critiques
+
+- **Écriture atomique du JSON** : Le fichier library.json est maintenant écrit dans un fichier temporaire puis renommé atomiquement, évitant toute corruption
+- **Validation des données** : Tous les champs sont validés avant l'écriture JSON
+- **Gestion des erreurs par livre** : Une erreur sur un livre n'interrompt plus le scan complet
+- **Sauvegarde sur interruption** : Appuyer sur Ctrl+C sauvegarde les livres déjà scannés
+- **Sauvegarde en cas d'erreur** : Même en cas d'erreur fatale, une tentative de sauvegarde partielle est effectuée
+
+### 🔧 Outils
+
+- **check_library.py** : Nouveau script pour vérifier la validité du fichier library.json
+  ```bash
+  python3 check_library.py
+  ```
+
+### 📚 Documentation
+
+- Ajout d'une section dépannage pour JSON corrompu
+- Documentation des nouvelles protections
+
+---
+
 ## Version 1.1.0 - Scan Incrémental (2025-11-10)
 
 ### 🚀 Nouvelles fonctionnalités

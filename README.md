@@ -237,6 +237,26 @@ pip install -r requirements.txt
 - Vérifiez que le dossier `library_data/` existe
 - Ouvrez `index.html` depuis le même dossier où se trouve `library_data/`
 
+### JSON malformé ou corrompu
+
+Si le scan s'interrompt et que le JSON est corrompu, pas de panique !
+
+```bash
+# Vérifier la validité du JSON
+python3 check_library.py
+
+# Si le JSON est invalide, relancez le scan
+# Avec la nouvelle version, le scan est robuste et ne devrait plus crasher
+python3 scanner.py /chemin/vers/vos/livres
+```
+
+**Nouvelles protections** :
+- ✅ Écriture atomique (fichier temporaire puis renommage)
+- ✅ Validation du JSON avant sauvegarde
+- ✅ Gestion des erreurs par livre (un livre problématique ne casse plus tout)
+- ✅ Sauvegarde même en cas de Ctrl+C
+- ✅ Sauvegarde partielle en cas d'erreur fatale
+
 ### Les couvertures ne s'affichent pas
 
 - Vérifiez que Pillow est installé : `pip install Pillow`
