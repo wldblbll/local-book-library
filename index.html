@@ -234,11 +234,12 @@
         }
 
         .category-tag {
-            background: #667eea;
+            /* background généré dynamiquement via getCategoryColor() */
             color: white;
             padding: 3px 8px;
             border-radius: 4px;
             font-size: 0.75em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .add-category-btn {
@@ -624,9 +625,14 @@
 
         // Remplir les filtres
         function populateFilters() {
-            // Auteurs
-            const authors = [...new Set(library.books.map(book => book.author))].sort();
+            // Auteurs - vider d'abord les options existantes
             const authorSelect = document.getElementById('author-filter');
+            // Garder seulement la première option (Tous les auteurs)
+            while (authorSelect.options.length > 1) {
+                authorSelect.remove(1);
+            }
+
+            const authors = [...new Set(library.books.map(book => book.author))].sort();
             authors.forEach(author => {
                 const option = document.createElement('option');
                 option.value = author;
@@ -634,17 +640,65 @@
                 authorSelect.appendChild(option);
             });
 
-            // Catégories
+            // Catégories - vider d'abord les options existantes
+            const categorySelect = document.getElementById('category-filter');
+            while (categorySelect.options.length > 1) {
+                categorySelect.remove(1);
+            }
+
             const categories = new Set();
             library.books.forEach(book => {
                 book.categories.forEach(cat => categories.add(cat));
             });
-            const categorySelect = document.getElementById('category-filter');
             [...categories].sort().forEach(category => {
                 const option = document.createElement('option');
                 option.value = category;
                 option.textContent = category;
                 categorySelect.appendChild(option);
+            });
+
+            // Mettre à jour le datalist pour l'autocomplétion
+            updateCategoriesDatalist();
+        }
+
+        // Générer une couleur basée sur le nom de la catégorie
+        function getCategoryColor(category) {
+            // Créer un hash simple du nom de la catégorie
+            let hash = 0;
+            for (let i = 0; i < category.length; i++) {
+                hash = category.charCodeAt(i) + ((hash << 5) - hash);
+            }
+
+            // Convertir en HSL pour des couleurs harmonieuses
+            const hue = Math.abs(hash % 360);
+            const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
+            const lightness = 45 + (Math.abs(hash >> 8) % 15); // 45-60%
+
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        // Mettre à jour le datalist pour l'autocomplétion des catégories
+        function updateCategoriesDatalist() {
+            const datalist = document.getElementById('categories-datalist');
+            if (!datalist) {
+                // Créer le datalist s'il n'existe pas
+                const newDatalist = document.createElement('datalist');
+                newDatalist.id = 'categories-datalist';
+                document.body.appendChild(newDatalist);
+            }
+
+            const categories = new Set();
+            library.books.forEach(book => {
+                book.categories.forEach(cat => categories.add(cat));
+            });
+
+            const datalistElement = document.getElementById('categories-datalist');
+            datalistElement.innerHTML = '';
+
+            [...categories].sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                datalistElement.appendChild(option);
             });
         }
 
@@ -676,7 +730,7 @@
             const pagesInfo = book.pages ? `${book.pages} pages` : 'ePub';
 
             const categoriesTags = book.categories.map(cat =>
-                `<span class="category-tag">${cat}</span>`
+                `<span class="category-tag" style="background: ${getCategoryColor(cat)};">${cat}</span>`
             ).join('');
 
             return `
@@ -721,7 +775,7 @@
             document.getElementById('modal-cover-container').innerHTML = coverHtml;
 
             const categoriesTags = book.categories.map((cat, idx) =>
-                `<span class="category-tag">${cat} <span style="cursor: pointer; margin-left: 5px;" onclick="removeCategory('${bookId}', ${idx})">×</span></span>`
+                `<span class="category-tag" style="background: ${getCategoryColor(cat)};">${cat} <span style="cursor: pointer; margin-left: 5px;" onclick="removeCategory('${bookId}', ${idx})">×</span></span>`
             ).join('');
 
             document.getElementById('modal-info').innerHTML = `
@@ -736,7 +790,7 @@
                     ${categoriesTags}
                 </div>
                 <div class="category-input">
-                    <input type="text" id="new-category-input" placeholder="Ajouter une catégorie...">
+                    <input type="text" id="new-category-input" list="categories-datalist" placeholder="Ajouter une catégorie..." autocomplete="off">
                     <button onclick="addCategory('${bookId}')">Ajouter</button>
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -745,6 +799,9 @@
                     </button>
                     <button onclick="showPathInstructions('${book.path.replace(/'/g, "\\'")}')" style="background: #f0f0f0; color: #666;">
                         📖 Voir les instructions
+                    </button>
+                    <button onclick="confirmDeleteBook('${bookId}')" style="background: #d32f2f; color: white;">
+                        🗑️ Supprimer ce livre
                     </button>
                 </div>
                 <p id="copy-status" style="margin-top: 10px; font-size: 0.9em; color: #667eea; display: none;"></p>
@@ -785,6 +842,57 @@
             openBookModal(bookId);
             displayBooks();
             populateFilters();
+        }
+
+        // Confirmer et supprimer un livre
+        function confirmDeleteBook(bookId) {
+            const book = library.books.find(b => b.id === bookId);
+            if (!book) return;
+
+            const confirmed = confirm(
+                `Êtes-vous sûr de vouloir supprimer ce livre de la bibliothèque ?\n\n` +
+                `Titre: ${book.title}\n` +
+                `Auteur: ${book.author}\n\n` +
+                `Note: Le fichier physique ne sera pas supprimé, seulement l'entrée dans la bibliothèque.`
+            );
+
+            if (confirmed) {
+                deleteBook(bookId);
+            }
+        }
+
+        // Supprimer un livre de la bibliothèque
+        function deleteBook(bookId) {
+            const bookIndex = library.books.findIndex(b => b.id === bookId);
+            if (bookIndex === -1) return;
+
+            // Supprimer le livre de la liste
+            library.books.splice(bookIndex, 1);
+            library.total_books = library.books.length;
+
+            // Mettre à jour filteredBooks
+            const filteredIndex = filteredBooks.findIndex(b => b.id === bookId);
+            if (filteredIndex !== -1) {
+                filteredBooks.splice(filteredIndex, 1);
+            }
+
+            // Sauvegarder et rafraîchir
+            saveLibrary();
+            closeModal();
+            updateStats();
+            populateFilters();
+            displayBooks();
+
+            // Afficher un message de confirmation
+            const status = document.getElementById('copy-status');
+            if (status) {
+                status.textContent = '✓ Livre supprimé de la bibliothèque';
+                status.style.display = 'block';
+                status.style.color = '#28a745';
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
         }
 
         // Sauvegarder la bibliothèque
