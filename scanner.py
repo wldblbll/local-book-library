@@ -75,8 +75,13 @@ class BookScanner:
             reader = PdfReader(filepath)
             metadata = reader.metadata
 
-            title = metadata.get('/Title', '') if metadata else ''
-            author = metadata.get('/Author', '') if metadata else ''
+            # Extraire et convertir en string (éviter les IndirectObject de PyPDF)
+            title = str(metadata.get('/Title', '')) if metadata else ''
+            author = str(metadata.get('/Author', '')) if metadata else ''
+
+            # Nettoyer les valeurs None ou vides
+            title = title if title and title != 'None' else ''
+            author = author if author and author != 'None' else ''
 
             # Si pas de titre, utiliser le nom du fichier
             if not title or title.strip() == '':
@@ -113,10 +118,10 @@ class BookScanner:
                     cover_path = None
 
             return {
-                'title': title,
-                'author': author or 'Auteur inconnu',
-                'cover': cover_path,
-                'pages': len(reader.pages)
+                'title': str(title),
+                'author': str(author) if author else 'Auteur inconnu',
+                'cover': cover_path,  # Déjà converti en string ou None
+                'pages': int(len(reader.pages))
             }
         except Exception as e:
             print(f"Erreur lors de la lecture de {filepath}: {e}")
@@ -130,11 +135,12 @@ class BookScanner:
         try:
             book = epub.read_epub(filepath)
 
+            # Extraire et convertir en string
             title = book.get_metadata('DC', 'title')
-            title = title[0][0] if title else filepath.stem
+            title = str(title[0][0]) if title else str(filepath.stem)
 
             author = book.get_metadata('DC', 'creator')
-            author = author[0][0] if author else 'Auteur inconnu'
+            author = str(author[0][0]) if author else 'Auteur inconnu'
 
             # Extraction de la couverture
             cover_path = None
@@ -158,9 +164,9 @@ class BookScanner:
                     cover_path = None
 
             return {
-                'title': title,
-                'author': author,
-                'cover': cover_path,
+                'title': str(title),
+                'author': str(author),
+                'cover': cover_path,  # Déjà converti en string ou None
                 'pages': None  # ePub n'a pas de pages fixes
             }
         except Exception as e:
@@ -312,15 +318,31 @@ class BookScanner:
         db_file = self.output_dir / "library.json"
         db_file_temp = self.output_dir / "library.json.tmp"
 
-        # Validation : s'assurer que tous les livres ont les champs requis
+        # Validation : s'assurer que tous les livres ont les champs requis et sérialisables
         for book in self.books:
-            # Garantir que tous les champs critiques existent
+            # Garantir que tous les champs critiques existent et sont du bon type
             if 'cover' not in book or book['cover'] is None:
                 book['cover'] = None
+            elif not isinstance(book['cover'], str):
+                book['cover'] = str(book['cover'])
+
             if 'categories' not in book:
                 book['categories'] = []
+            elif not isinstance(book['categories'], list):
+                book['categories'] = []
+
             if 'pages' not in book:
                 book['pages'] = None
+            elif book['pages'] is not None and not isinstance(book['pages'], int):
+                try:
+                    book['pages'] = int(book['pages'])
+                except:
+                    book['pages'] = None
+
+            # Sécuriser les autres champs en les convertissant en types de base
+            for key in ['title', 'author', 'filename', 'path', 'type']:
+                if key in book and book[key] is not None:
+                    book[key] = str(book[key])
 
         database = {
             'version': '1.0',
