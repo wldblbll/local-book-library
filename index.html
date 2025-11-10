@@ -525,11 +525,25 @@
         // Charger la bibliothèque au démarrage
         async function loadLibrary() {
             try {
+                console.log('Chargement de la bibliothèque...');
                 const response = await fetch('library_data/library.json');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
                 if (!response.ok) {
-                    throw new Error('Fichier library.json introuvable');
+                    throw new Error(`Fichier library.json introuvable (status: ${response.status})`);
                 }
-                library = await response.json();
+
+                // Récupérer le texte brut d'abord
+                const text = await response.text();
+                console.log('Taille du texte reçu:', text.length, 'caractères');
+                console.log('Premiers 100 caractères:', text.substring(0, 100));
+                console.log('Derniers 100 caractères:', text.substring(text.length - 100));
+
+                // Parser le JSON
+                library = JSON.parse(text);
+                console.log('JSON parsé avec succès!', library.total_books, 'livres');
+
                 filteredBooks = library.books;
 
                 updateStats();
@@ -537,11 +551,18 @@
                 displayBooks();
             } catch (error) {
                 console.error('Erreur de chargement:', error);
+                console.error('Stack trace:', error.stack);
                 document.getElementById('books-display').innerHTML = `
                     <div class="error-message">
                         <h2>❌ Erreur de chargement</h2>
-                        <p>Impossible de charger la bibliothèque. Assurez-vous d'avoir exécuté le scanner.py d'abord.</p>
-                        <p><strong>Commande:</strong> python scanner.py /chemin/vers/vos/livres</p>
+                        <p><strong>Erreur:</strong> ${error.message}</p>
+                        <p>Impossible de charger la bibliothèque. Vérifiez que :</p>
+                        <ul style="text-align: left; margin: 10px 0;">
+                            <li>Vous utilisez <strong>http://localhost:8000</strong> et PAS file://</li>
+                            <li>Le serveur HTTP est bien démarré : <code>python3 -m http.server 8000</code></li>
+                            <li>Le fichier library_data/library.json existe et est valide</li>
+                        </ul>
+                        <p><strong>Commande pour rescanner:</strong> python3 scanner.py /chemin/vers/vos/livres</p>
                     </div>
                 `;
             }
