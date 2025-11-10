@@ -1025,6 +1025,7 @@
         // Charger la bibliothèque au démarrage
         loadLibrary().then(() => {
             loadFromLocalStorage();
+            populateFilters(); // Rappeler pour inclure les catégories du localStorage
             displayBooks();
         });
     </script>
