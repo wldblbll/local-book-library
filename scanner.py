@@ -12,6 +12,11 @@ import argparse
 from datetime import datetime
 import signal
 import sys
+import logging
+
+# Supprimer les messages de debug de PyPDF
+logging.getLogger("pypdf").setLevel(logging.ERROR)
+logging.getLogger("PyPDF2").setLevel(logging.ERROR)
 
 try:
     from pypdf import PdfReader
