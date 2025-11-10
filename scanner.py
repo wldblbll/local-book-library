@@ -97,19 +97,20 @@ class BookScanner:
                                 # Sauvegarder l'image de couverture
                                 file_hash = self.get_file_hash(filepath)
                                 cover_filename = f"{file_hash}.jpg"
-                                cover_path = self.covers_dir / cover_filename
+                                cover_path_obj = self.covers_dir / cover_filename
 
                                 try:
                                     image = Image.open(BytesIO(data))
                                     # Redimensionner pour économiser de l'espace
                                     image.thumbnail((300, 400))
-                                    image.save(cover_path, "JPEG")
-                                    cover_path = str(cover_path.relative_to(self.output_dir))
+                                    image.save(cover_path_obj, "JPEG")
+                                    # Convertir en string relatif
+                                    cover_path = str(cover_path_obj.relative_to(self.output_dir))
                                 except:
                                     cover_path = None
                                 break
                 except:
-                    pass
+                    cover_path = None
 
             return {
                 'title': title,
@@ -145,15 +146,16 @@ class BookScanner:
                             # Prendre la première image (souvent la couverture)
                             file_hash = self.get_file_hash(filepath)
                             cover_filename = f"{file_hash}.jpg"
-                            cover_path = self.covers_dir / cover_filename
+                            cover_path_obj = self.covers_dir / cover_filename
 
                             image = Image.open(BytesIO(item.get_content()))
                             image.thumbnail((300, 400))
-                            image.save(cover_path, "JPEG")
-                            cover_path = str(cover_path.relative_to(self.output_dir))
+                            image.save(cover_path_obj, "JPEG")
+                            # Convertir en string relatif
+                            cover_path = str(cover_path_obj.relative_to(self.output_dir))
                             break
                 except:
-                    pass
+                    cover_path = None
 
             return {
                 'title': title,
