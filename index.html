@@ -315,6 +315,84 @@
             padding-left: 10px;
         }
 
+        /* Vue catégories */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .category-color-bar {
+            height: 8px;
+            width: 100%;
+        }
+
+        .category-name {
+            padding: 20px 20px 10px 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .category-count {
+            padding: 0 20px 20px 20px;
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        /* Système de notation par étoiles */
+        .star-rating {
+            display: inline-flex;
+            gap: 3px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .star-rating .star {
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .star-rating .star.filled {
+            color: #ffc107;
+        }
+
+        .star-rating .star:hover {
+            color: #ffc107;
+        }
+
+        .star-rating-display {
+            display: inline-flex;
+            gap: 2px;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .star-rating-display .star {
+            color: #ddd;
+        }
+
+        .star-rating-display .star.filled {
+            color: #ffc107;
+        }
+
         .no-books {
             text-align: center;
             padding: 60px 20px;
@@ -529,6 +607,7 @@
                 <div class="view-toggle">
                     <button id="grid-view" class="active">Grille</button>
                     <button id="list-view">Liste</button>
+                    <button id="categories-view">Catégories</button>
                 </div>
             </div>
             <div class="filters">
@@ -692,6 +771,57 @@
             return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
         }
 
+        // Créer l'affichage des étoiles (lecture seule)
+        function createStarDisplay(rating) {
+            rating = rating || 0;
+            let starsHtml = '<div class="star-rating-display">';
+            for (let i = 1; i <= 5; i++) {
+                const filled = i <= rating ? 'filled' : '';
+                starsHtml += `<span class="star ${filled}">★</span>`;
+            }
+            starsHtml += '</div>';
+            return starsHtml;
+        }
+
+        // Créer le composant de notation interactif
+        function createStarRating(bookId, currentRating) {
+            currentRating = currentRating || 0;
+            let starsHtml = '<div class="star-rating" id="star-rating-' + bookId + '">';
+            for (let i = 1; i <= 5; i++) {
+                const filled = i <= currentRating ? 'filled' : '';
+                starsHtml += `<span class="star ${filled}" data-rating="${i}" onclick="setRating('${bookId}', ${i})">★</span>`;
+            }
+            starsHtml += '</div>';
+            return starsHtml;
+        }
+
+        // Modifier la note d'un livre
+        function setRating(bookId, rating) {
+            const book = library.books.find(b => b.id === bookId);
+            if (!book) return;
+
+            book.rating = rating;
+            saveLibrary();
+
+            // Rafraîchir l'affichage des étoiles dans la modal
+            const ratingContainer = document.getElementById('star-rating-' + bookId);
+            if (ratingContainer) {
+                for (let i = 1; i <= 5; i++) {
+                    const star = ratingContainer.querySelector(`[data-rating="${i}"]`);
+                    if (star) {
+                        if (i <= rating) {
+                            star.classList.add('filled');
+                        } else {
+                            star.classList.remove('filled');
+                        }
+                    }
+                }
+            }
+
+            // Rafraîchir l'affichage principal
+            displayBooks();
+        }
+
         // Mettre à jour le datalist pour l'autocomplétion des catégories
         function updateCategoriesDatalist() {
             const datalist = document.getElementById('categories-datalist');
@@ -719,6 +849,11 @@
 
         // Afficher les livres
         function displayBooks() {
+            if (currentView === 'categories') {
+                displayCategoriesView();
+                return;
+            }
+
             const container = document.getElementById('books-display');
             container.className = currentView === 'grid' ? 'books-grid' : 'books-list';
 
@@ -733,6 +868,70 @@
             }
 
             container.innerHTML = filteredBooks.map(book => createBookCard(book)).join('');
+        }
+
+        // Afficher la vue des catégories
+        function displayCategoriesView() {
+            const container = document.getElementById('books-display');
+            container.className = 'categories-grid';
+
+            // Compter les livres par catégorie
+            const categoriesCount = {};
+            library.books.forEach(book => {
+                book.categories.forEach(cat => {
+                    if (!categoriesCount[cat]) {
+                        categoriesCount[cat] = 0;
+                    }
+                    categoriesCount[cat]++;
+                });
+            });
+
+            // Ajouter une catégorie "Sans catégorie"
+            const booksWithoutCategory = library.books.filter(b => b.categories.length === 0).length;
+            if (booksWithoutCategory > 0) {
+                categoriesCount['Sans catégorie'] = booksWithoutCategory;
+            }
+
+            // Trier par nombre de livres (décroissant)
+            const sortedCategories = Object.entries(categoriesCount).sort((a, b) => b[1] - a[1]);
+
+            if (sortedCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="no-books">
+                        <h2>Aucune catégorie</h2>
+                        <p>Commencez par ajouter des catégories à vos livres</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sortedCategories.map(([category, count]) => `
+                <div class="category-card" onclick="filterByCategory('${category.replace(/'/g, "\\'")}')">
+                    <div class="category-color-bar" style="background: ${getCategoryColor(category)};"></div>
+                    <div class="category-name">${category}</div>
+                    <div class="category-count">${count} livre${count > 1 ? 's' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // Filtrer par catégorie depuis la vue catégories
+        function filterByCategory(category) {
+            // Revenir à la vue grille
+            currentView = 'grid';
+            document.getElementById('grid-view').classList.add('active');
+            document.getElementById('list-view').classList.remove('active');
+            document.getElementById('categories-view').classList.remove('active');
+
+            // Appliquer le filtre
+            if (category === 'Sans catégorie') {
+                document.getElementById('category-filter').value = '';
+                filteredBooks = library.books.filter(book => book.categories.length === 0);
+            } else {
+                document.getElementById('category-filter').value = category;
+                applyFilters();
+            }
+
+            displayBooks();
         }
 
         // Créer une carte de livre
@@ -754,6 +953,7 @@
                     <div class="book-info">
                         <div class="book-title">${book.title}</div>
                         <div class="book-author">${book.author}</div>
+                        ${createStarDisplay(book.rating || 0)}
                         <div class="book-meta">
                             <span>${book.type.toUpperCase()}</span>
                             <span>${pagesInfo}</span>
@@ -800,7 +1000,9 @@
                 <p><strong>Taille:</strong> ${formatFileSize(book.size)}</p>
                 <p><strong>Fichier:</strong> ${book.filename}</p>
                 <p><strong>Modifié:</strong> ${new Date(book.modified).toLocaleDateString('fr-FR')}</p>
-                <p><strong>Catégories:</strong></p>
+                <p><strong>Note:</strong></p>
+                ${createStarRating(bookId, book.rating || 0)}
+                <p style="margin-top: 15px;"><strong>Catégories:</strong></p>
                 <div class="book-categories" style="margin-bottom: 10px;">
                     ${categoriesTags}
                 </div>
@@ -809,6 +1011,9 @@
                     <button onclick="addCategory('${bookId}')">Ajouter</button>
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    ${book.type === 'pdf' ? `<button onclick="openPdfInBrowser('${book.path.replace(/'/g, "\\'")}', '${book.title.replace(/'/g, "\\'")}')">
+                        🌐 Ouvrir le PDF dans le navigateur
+                    </button>` : ''}
                     <button onclick="copyPath('${book.path.replace(/'/g, "\\'")}')">
                         📋 Copier le chemin
                     </button>
@@ -932,14 +1137,15 @@
             }
         }
 
-        // Exporter les catégories modifiées
+        // Exporter les catégories et notes modifiées
         function exportCategories() {
             const categoriesData = {
                 export_date: new Date().toISOString(),
                 books: library.books.map(book => ({
                     id: book.id,
                     title: book.title,
-                    categories: book.categories
+                    categories: book.categories,
+                    rating: book.rating || 0
                 }))
             };
 
@@ -962,7 +1168,28 @@
                 }, 300);
             }
 
-            alert('✓ Catégories exportées!\n\nMaintenant, lancez :\npython3 import_categories.py categories_XXXX-XX-XX.json');
+            alert('✓ Catégories et notes exportées!\n\nMaintenant, lancez :\npython3 import_categories.py categories_XXXX-XX-XX.json');
+        }
+
+        // Ouvrir le PDF dans le navigateur
+        function openPdfInBrowser(path, title) {
+            // Essayer d'ouvrir avec file://
+            const fileUrl = 'file://' + path;
+            const newWindow = window.open(fileUrl, '_blank');
+
+            // Afficher un message d'aide si nécessaire
+            setTimeout(() => {
+                const status = document.getElementById('copy-status');
+                status.innerHTML = `
+                    <strong>💡 Astuce :</strong> Si le PDF ne s'ouvre pas, c'est normal - les navigateurs bloquent file:// pour des raisons de sécurité.<br><br>
+                    <strong>Solution :</strong> Copiez le chemin et ouvrez-le manuellement dans votre lecteur PDF préféré.
+                `;
+                status.style.display = 'block';
+                status.style.color = '#666';
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 8000);
+            }, 1000);
         }
 
         // Copier le chemin dans le presse-papier
@@ -1019,12 +1246,17 @@
             if (saved) {
                 try {
                     const savedLibrary = JSON.parse(saved);
-                    // Fusionner les catégories sauvegardées avec les données actuelles
+                    // Fusionner les catégories et notes sauvegardées avec les données actuelles
                     if (library) {
                         library.books.forEach(book => {
                             const savedBook = savedLibrary.books.find(b => b.id === book.id);
-                            if (savedBook && savedBook.categories) {
-                                book.categories = savedBook.categories;
+                            if (savedBook) {
+                                if (savedBook.categories) {
+                                    book.categories = savedBook.categories;
+                                }
+                                if (savedBook.rating !== undefined) {
+                                    book.rating = savedBook.rating;
+                                }
                             }
                         });
                     }
@@ -1074,6 +1306,15 @@
             currentView = 'list';
             document.getElementById('list-view').classList.add('active');
             document.getElementById('grid-view').classList.remove('active');
+            document.getElementById('categories-view').classList.remove('active');
+            displayBooks();
+        });
+
+        document.getElementById('categories-view').addEventListener('click', () => {
+            currentView = 'categories';
+            document.getElementById('categories-view').classList.add('active');
+            document.getElementById('grid-view').classList.remove('active');
+            document.getElementById('list-view').classList.remove('active');
             displayBooks();
         });
 
@@ -1081,6 +1322,16 @@
         document.getElementById('book-modal').addEventListener('click', (e) => {
             if (e.target.id === 'book-modal') {
                 closeModal();
+            }
+        });
+
+        // Fermer la modal avec la touche Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                const modal = document.getElementById('book-modal');
+                if (modal.classList.contains('active')) {
+                    closeModal();
+                }
             }
         });
 

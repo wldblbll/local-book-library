@@ -44,20 +44,31 @@ def import_categories(categories_file, library_file="library_data/library.json")
         print(f"❌ Erreur lors du chargement de la bibliothèque: {e}")
         return False
 
-    # Créer un dictionnaire des catégories par ID de livre
+    # Créer un dictionnaire des catégories et notes par ID de livre
     categories_by_id = {}
+    ratings_by_id = {}
     for book_data in categories_data.get('books', []):
-        categories_by_id[book_data['id']] = book_data['categories']
+        categories_by_id[book_data['id']] = book_data.get('categories', [])
+        ratings_by_id[book_data['id']] = book_data.get('rating', 0)
 
-    # Fusionner les catégories dans la bibliothèque
-    print("🔄 Fusion des catégories...")
+    # Fusionner les catégories et notes dans la bibliothèque
+    print("🔄 Fusion des catégories et notes...")
     updated_count = 0
     for book in library['books']:
         book_id = book['id']
-        if book_id in categories_by_id:
-            new_categories = categories_by_id[book_id]
-            if book.get('categories') != new_categories:
-                book['categories'] = new_categories
+        if book_id in categories_by_id or book_id in ratings_by_id:
+            changed = False
+            if book_id in categories_by_id:
+                new_categories = categories_by_id[book_id]
+                if book.get('categories') != new_categories:
+                    book['categories'] = new_categories
+                    changed = True
+            if book_id in ratings_by_id:
+                new_rating = ratings_by_id[book_id]
+                if book.get('rating') != new_rating:
+                    book['rating'] = new_rating
+                    changed = True
+            if changed:
                 updated_count += 1
 
     print(f"   {updated_count} livres mis à jour")
