@@ -55,6 +55,8 @@ python scanner.py /chemin/vers/vos/livres
 
 ## 🎯 Utilisation avec les scripts assistants
 
+Les scripts `run.sh` (Linux/macOS) et `run.bat` (Windows) offrent un menu interactif :
+
 ### Linux/macOS
 
 ```bash
@@ -68,14 +70,23 @@ chmod +x run.sh
 run.bat
 ```
 
+**Options disponibles :**
+1. Scanner une nouvelle bibliothèque
+2. **Importer des catégories/notes depuis un fichier JSON** 📥
+3. Ouvrir l'interface web
+4. Lancer un serveur web local
+5. Quitter
+
 ---
 
 ## 📋 Ce que vous pouvez faire
 
 - ✅ Rechercher dans vos livres par titre, auteur, mot-clé
-- ✅ Filtrer par auteur, catégorie, type de fichier
+- ✅ Filtrer par auteur, catégorie, type de fichier, note
+- ✅ Noter vos livres de 1 à 5 étoiles
 - ✅ Voir les couvertures de vos livres
-- ✅ Ajouter des catégories personnalisées
+- ✅ Ajouter des catégories personnalisées (colorées)
+- ✅ Vue des catégories avec compteurs
 - ✅ Passer en vue grille ou liste
 - ✅ Ouvrir vos livres directement
 

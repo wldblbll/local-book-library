@@ -25,6 +25,7 @@
 
 - Export/import des notes avec les catégories
 - Script import_categories.py mis à jour pour importer les notes
+- **Scripts run.sh et run.bat améliorés** : Nouvelle option 2 pour importer directement les catégories/notes depuis le menu interactif
 
 ---
 

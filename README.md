@@ -128,16 +128,27 @@ Utilisez les menus déroulants pour filtrer par :
 
 ### Sauvegarder les catégories définitivement
 
-Les catégories sont d'abord sauvegardées dans le navigateur. Pour les enregistrer dans `library.json` :
+Les catégories et notes sont d'abord sauvegardées dans le navigateur. Pour les enregistrer dans `library.json` :
 
 1. **Exportez** : Cliquez sur "📥 Exporter les catégories" (bannière jaune qui apparaît après modification)
-2. **Importez** : Lancez le script Python :
+
+2. **Importez** : Deux méthodes possibles
+
+   **Méthode 1 - Via le script assistant (recommandé)** :
+   ```bash
+   ./run.sh  # ou run.bat sur Windows
+   # Choisir l'option 2 : Importer des catégories/notes
+   # Entrer le chemin du fichier JSON exporté
+   ```
+
+   **Méthode 2 - Directement** :
    ```bash
    python3 import_categories.py categories_2025-11-10.json
    ```
+
 3. **Rechargez** : Rechargez la page web (`F5`)
 
-Vos catégories sont maintenant dans `library.json` et seront préservées lors des prochains scans !
+Vos catégories et notes sont maintenant dans `library.json` et seront préservées lors des prochains scans !
 
 ### Noter vos livres
 
