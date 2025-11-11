@@ -35,11 +35,12 @@ if errorlevel 1 (
 echo.
 echo Choisissez une option :
 echo 1) Scanner une nouvelle bibliothèque
-echo 2) Ouvrir l'interface web
-echo 3) Lancer un serveur web local
-echo 4) Quitter
+echo 2) Importer des catégories/notes depuis un fichier JSON
+echo 3) Ouvrir l'interface web
+echo 4) Lancer un serveur web local
+echo 5) Quitter
 echo.
-set /p choice="Votre choix (1-4) : "
+set /p choice="Votre choix (1-5) : "
 
 if "%choice%"=="1" (
     echo.
@@ -63,9 +64,35 @@ if "%choice%"=="1" (
         exit /b 1
     )
     echo.
+    set /p categories_file="Entrez le chemin du fichier JSON de catégories/notes : "
+    if not exist "!categories_file!" (
+        echo ❌ Le fichier n'existe pas : !categories_file!
+        pause
+        exit /b 1
+    )
+    echo.
+    echo 📥 Import des catégories et notes en cours...
+    python import_categories.py "!categories_file!"
+    if errorlevel 1 (
+        echo.
+        echo ❌ Erreur lors de l'import
+        pause
+        exit /b 1
+    )
+    echo.
+    echo ✓ Import terminé !
+    echo   Rechargez votre page web (F5^) pour voir les changements
+    pause
+) else if "%choice%"=="3" (
+    if not exist "library_data\library.json" (
+        echo ❌ Aucune bibliothèque trouvée. Veuillez d'abord scanner vos livres (option 1^)
+        pause
+        exit /b 1
+    )
+    echo.
     echo 🌐 Ouverture de l'interface...
     start index.html
-) else if "%choice%"=="3" (
+) else if "%choice%"=="4" (
     if not exist "library_data\library.json" (
         echo ❌ Aucune bibliothèque trouvée. Veuillez d'abord scanner vos livres (option 1^)
         pause
@@ -77,7 +104,7 @@ if "%choice%"=="1" (
     echo    Appuyez sur Ctrl+C pour arrêter
     echo.
     python -m http.server 8000
-) else if "%choice%"=="4" (
+) else if "%choice%"=="5" (
     echo Au revoir ! 👋
     exit /b 0
 ) else (

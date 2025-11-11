@@ -31,11 +31,12 @@ fi
 echo ""
 echo "Choisissez une option :"
 echo "1) Scanner une nouvelle bibliothèque"
-echo "2) Ouvrir l'interface web"
-echo "3) Lancer un serveur web local"
-echo "4) Quitter"
+echo "2) Importer des catégories/notes depuis un fichier JSON"
+echo "3) Ouvrir l'interface web"
+echo "4) Lancer un serveur web local"
+echo "5) Quitter"
 echo ""
-read -p "Votre choix (1-4) : " choice
+read -p "Votre choix (1-5) : " choice
 
 case $choice in
     1)
@@ -58,6 +59,30 @@ case $choice in
             exit 1
         fi
         echo ""
+        read -p "Entrez le chemin du fichier JSON de catégories/notes : " categories_file
+        if [ ! -f "$categories_file" ]; then
+            echo "❌ Le fichier n'existe pas : $categories_file"
+            exit 1
+        fi
+        echo ""
+        echo "📥 Import des catégories et notes en cours..."
+        python3 import_categories.py "$categories_file"
+        if [ $? -eq 0 ]; then
+            echo ""
+            echo "✓ Import terminé !"
+            echo "  Rechargez votre page web (F5) pour voir les changements"
+        else
+            echo ""
+            echo "❌ Erreur lors de l'import"
+            exit 1
+        fi
+        ;;
+    3)
+        if [ ! -f "library_data/library.json" ]; then
+            echo "❌ Aucune bibliothèque trouvée. Veuillez d'abord scanner vos livres (option 1)"
+            exit 1
+        fi
+        echo ""
         echo "🌐 Ouverture de l'interface..."
         # Tenter d'ouvrir selon l'OS
         if command -v xdg-open &> /dev/null; then
@@ -68,7 +93,7 @@ case $choice in
             echo "Veuillez ouvrir manuellement le fichier : $(pwd)/index.html"
         fi
         ;;
-    3)
+    4)
         if [ ! -f "library_data/library.json" ]; then
             echo "❌ Aucune bibliothèque trouvée. Veuillez d'abord scanner vos livres (option 1)"
             exit 1
@@ -80,7 +105,7 @@ case $choice in
         echo ""
         python3 -m http.server 8000
         ;;
-    4)
+    5)
         echo "Au revoir ! 👋"
         exit 0
         ;;
