@@ -8,6 +8,7 @@
   - Affichage des notes sur les cartes de livres
   - Notation interactive dans la modal de détails
   - Sauvegarde des notes dans localStorage et export/import
+  - **Filtre par nombre d'étoiles** : Filtrez les livres par note (5★, 4+, 3+, 2+, 1+, Sans note)
 
 - **Ouverture des PDF dans le navigateur** : Bouton pour ouvrir directement les PDF
   - Uniquement pour les fichiers PDF

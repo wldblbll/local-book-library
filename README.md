@@ -9,7 +9,7 @@ Une application simple et élégante pour gérer votre collection de livres num�
 - ⭐ **Notation par étoiles** : Notez vos livres de 0 à 5 étoiles
 - 🔍 **Recherche puissante** : Recherchez par titre, auteur ou mot-clé
 - 🏷️ **Catégorisation** : Ajoutez et gérez des catégories personnalisées (avec couleurs!)
-- 📊 **Filtres multiples** : Filtrez par auteur, catégorie et type de fichier
+- 📊 **Filtres multiples** : Filtrez par auteur, catégorie, type de fichier et nombre d'étoiles
 - 📑 **Vue des catégories** : Visualisez toutes vos catégories avec le nombre de livres
 - 🎯 **Interface moderne** : Interface web simple et intuitive (aucun serveur requis)
 - 💾 **100% local** : Toutes vos données restent sur votre machine
