@@ -631,6 +631,18 @@
                         <option value="epub">ePub</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label>Note:</label>
+                    <select id="rating-filter">
+                        <option value="">Toutes les notes</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 étoiles)</option>
+                        <option value="4">⭐⭐⭐⭐ (4+)</option>
+                        <option value="3">⭐⭐⭐ (3+)</option>
+                        <option value="2">⭐⭐ (2+)</option>
+                        <option value="1">⭐ (1+)</option>
+                        <option value="0">Sans note</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -1272,6 +1284,7 @@
             const authorFilter = document.getElementById('author-filter').value;
             const categoryFilter = document.getElementById('category-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
+            const ratingFilter = document.getElementById('rating-filter').value;
 
             filteredBooks = library.books.filter(book => {
                 const matchSearch = !searchTerm ||
@@ -1283,7 +1296,22 @@
                 const matchCategory = !categoryFilter || book.categories.includes(categoryFilter);
                 const matchType = !typeFilter || book.type === typeFilter;
 
-                return matchSearch && matchAuthor && matchCategory && matchType;
+                // Filtre par note
+                let matchRating = true;
+                if (ratingFilter !== '') {
+                    const filterValue = parseInt(ratingFilter);
+                    const bookRating = book.rating || 0;
+
+                    if (filterValue === 0) {
+                        // "Sans note" - afficher seulement les livres non notés
+                        matchRating = bookRating === 0;
+                    } else {
+                        // "X étoiles et plus" - afficher les livres avec au moins X étoiles
+                        matchRating = bookRating >= filterValue;
+                    }
+                }
+
+                return matchSearch && matchAuthor && matchCategory && matchType && matchRating;
             });
 
             displayBooks();
@@ -1294,6 +1322,7 @@
         document.getElementById('author-filter').addEventListener('change', applyFilters);
         document.getElementById('category-filter').addEventListener('change', applyFilters);
         document.getElementById('type-filter').addEventListener('change', applyFilters);
+        document.getElementById('rating-filter').addEventListener('change', applyFilters);
 
         document.getElementById('grid-view').addEventListener('click', () => {
             currentView = 'grid';
