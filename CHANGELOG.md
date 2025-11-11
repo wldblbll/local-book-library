@@ -1,5 +1,32 @@
 # Changelog
 
+## Version 1.4.0 - Nouvelles fonctionnalités interactives (2025-11-11)
+
+### ✨ Nouvelles fonctionnalités
+
+- **Système de notation par étoiles** : Notez vos livres de 0 à 5 étoiles
+  - Affichage des notes sur les cartes de livres
+  - Notation interactive dans la modal de détails
+  - Sauvegarde des notes dans localStorage et export/import
+
+- **Ouverture des PDF dans le navigateur** : Bouton pour ouvrir directement les PDF
+  - Uniquement pour les fichiers PDF
+  - Message d'aide si le navigateur bloque l'accès file://
+
+- **Vue des catégories** : Nouvelle vue affichant toutes les catégories
+  - Nombre de livres par catégorie
+  - Tri par nombre de livres décroissant
+  - Clic sur une catégorie pour filtrer les livres
+
+- **Fermeture de la modal avec Escape** : Appuyez sur Echap pour fermer la modal
+
+### 🔧 Améliorations
+
+- Export/import des notes avec les catégories
+- Script import_categories.py mis à jour pour importer les notes
+
+---
+
 ## Version 1.3.0 - Catégories colorées et gestion améliorée (2025-11-10)
 
 ### ✨ Nouvelles fonctionnalités

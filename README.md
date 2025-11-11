@@ -6,9 +6,11 @@ Une application simple et élégante pour gérer votre collection de livres num�
 
 - 📖 **Scan automatique** : Scanne récursivement un dossier pour trouver tous vos PDF et ePub
 - 🎨 **Extraction de couvertures** : Affiche les couvertures de vos livres
+- ⭐ **Notation par étoiles** : Notez vos livres de 0 à 5 étoiles
 - 🔍 **Recherche puissante** : Recherchez par titre, auteur ou mot-clé
-- 🏷️ **Catégorisation** : Ajoutez et gérez des catégories personnalisées
+- 🏷️ **Catégorisation** : Ajoutez et gérez des catégories personnalisées (avec couleurs!)
 - 📊 **Filtres multiples** : Filtrez par auteur, catégorie et type de fichier
+- 📑 **Vue des catégories** : Visualisez toutes vos catégories avec le nombre de livres
 - 🎯 **Interface moderne** : Interface web simple et intuitive (aucun serveur requis)
 - 💾 **100% local** : Toutes vos données restent sur votre machine
 
@@ -136,6 +138,14 @@ Les catégories sont d'abord sauvegardées dans le navigateur. Pour les enregist
 3. **Rechargez** : Rechargez la page web (`F5`)
 
 Vos catégories sont maintenant dans `library.json` et seront préservées lors des prochains scans !
+
+### Noter vos livres
+
+1. **Ouvrez la modal** d'un livre (cliquez sur la carte)
+2. **Cliquez sur les étoiles** pour donner une note de 1 à 5
+3. La note apparaît immédiatement sur la carte du livre
+4. Les notes sont sauvegardées automatiquement dans le navigateur
+5. **Exportez/importez** avec les catégories pour enregistrer dans `library.json`
 
 ## 📁 Structure du projet
 
